@@ -1,6 +1,4 @@
-<<<<<<< Updated upstream
 #!/bin/bash
-=======
 
 # Função para contar o numero de utilizadores
 function countUsers(){
@@ -18,9 +16,9 @@ function countUsers(){
 # Função para contar o numero de sessoes para os utilizadores
 function detailSessions(){
     for i in "${users[@]}"; do # para cada utilizador
-        echo -n $i
+        echo -n "$i "
         echo -n "$(last | awk '{print $1}' | grep $i | wc -l) " # conta o numero de sessoes
-        # seleciona coluna do tempo
+        # seleciona coluna do tempo (array)
         if [ $soId -eq 0 ]; then
             time=($(last | grep $i | awk '{print $9}'))
             time=(${time[@]/"in"})
@@ -31,10 +29,10 @@ function detailSessions(){
         min=1000000000
         max=0
         timeSum=0
-        for t in "${time[@]}"; do
+        for t in "${time[@]}"; do # percorre tempos de sessao, calcula tempo em minutos e determina tempo minimo e maximo
             hour=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 1)
             min=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
-            timeAux=$(($hour*60+$min))
+            timeAux=$((10#$hour*60+10#$min)) # 10# para quando operados tem zero a esquerda nao dar erro
             ((timeSum=$timeSum+$timeAux))
             if [ $timeAux -lt $min ]; then
                 ((min=$timeAux))
