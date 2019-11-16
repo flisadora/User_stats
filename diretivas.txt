@@ -1,0 +1,14 @@
+	1)	permite a visualização do número de sessões
+	2)	tempo total de ligação (em minutos)
+	3)	duração máxima e duração mínima das sessões dos utilizadores seleccionados no período seleccionado
+	•	A selecção dos utilizadores pode ser realizada através do seu grupo (opção -g) 
+	•	ou através de uma expressão regular que é verificada com o nome dos utilizadores (opção -u)
+	•	A selecção do período realiza-se através da especificação da data de início da sessão a partir da qual as sessões devem ser consideradas (opção -s) 
+	•	e da data de início de sessão a partir da qual as sessões não devem ser consideradas (opção -e)
+	•	A opção -f permite que a informação sobre as sessões (extraída através do comando last) use um ficheiro distinto de /var/log/wtmp
+	•	A visualização é ordenada por ordem crescente do nome de utilizador, mas pode também aparecer ordenada de outras formas: 
+	⁃	opções -r (ordem decrescente)
+	⁃	-n (por número de sessões)
+	⁃	-t (por tempo total)
+	⁃	-a (por tempo máximo)
+	⁃	e -i (por tempo mínimo)
