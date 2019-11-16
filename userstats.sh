@@ -21,32 +21,34 @@ function countUsers(){
 # Função para contar o numero de sessoes para os utilizadores
 function detailSessions(){
     for i in "${users[@]}"; do # para cada utilizador
-        echo -n "$i "
-        echo -n "$(last | awk '{print $1}' | grep $i | wc -l) " # conta o numero de sessoes
-        # seleciona coluna do tempo (array)
-        if [ $soId -eq 0 ]; then
-            time=($(last | grep $i | awk '{print $9}'))
-            time=(${time[@]/"in"})
-        else
-            time=($(last | grep $i | awk '{print $10}'))
-            time=(${time[@]/"no"})
-        fi
-        min=1000000000
-        max=0
-        timeSum=0
-        for t in "${time[@]}"; do # percorre tempos de sessao, calcula tempo em minutos e determina tempo minimo e maximo
-            hour=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 1)
-            min=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
-            timeAux=$((10#$hour*60+10#$min)) # 10# para quando operados tem zero a esquerda nao dar erro
-            ((timeSum=$timeSum+$timeAux))
-            if [ $timeAux -lt $min ]; then
-                ((min=$timeAux))
+        sessions=$(echo -n "$(last | awk '{print $1}' | grep $i | wc -l) ") # conta o numero de sessoes
+        if [ $sessions -ne 0 ]; then
+            echo -n "$i "
+            # seleciona coluna do tempo (array)
+            if [ $soId -eq 0 ]; then
+                time=($(last | grep $i | awk '{print $9}'))
+                time=(${time[@]/"in"})
+            else
+                time=($(last | grep $i | awk '{print $10}'))
+                time=(${time[@]/"no"})
             fi
-            if [ $timeAux -gt $max ]; then
-                ((max=$timeAux))
-            fi            
-        done
-        echo "$timeSum $max $min"
+            min=1000000000
+            max=0
+            timeSum=0
+            for t in "${time[@]}"; do # percorre tempos de sessao, calcula tempo em minutos e determina tempo minimo e maximo
+                hour=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 1)
+                min=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
+                timeAux=$((10#$hour*60+10#$min)) # 10# para quando operados tem zero a esquerda nao dar erro
+                ((timeSum=$timeSum+$timeAux))
+                if [ $timeAux -lt $min ]; then
+                    ((min=$timeAux))
+                fi
+                if [ $timeAux -gt $max ]; then
+                    ((max=$timeAux))
+                fi            
+            done
+            echo "$timeSum $max $min"
+        fi
     done
 }
 
@@ -69,7 +71,6 @@ for ((a=0; a<$#; a++)); do
             ;;
     esac
 done
-echo "$group"
 countUsers
 detailSessions
 
