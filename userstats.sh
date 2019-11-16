@@ -16,6 +16,17 @@ function countUsers(){
         users=(${users[@]/"root"})
         users=(${users[@]/"_mbsetupuser"})
     fi
+    if [ ! -z $regex]; then
+        for i in $users; do
+            case "$i" in
+                $regex)
+                    ;;
+                *)
+                    users=(${users[@]/"$i"})
+                    ;;
+            esac
+        done
+    fi
 }
 
 # Função para contar o numero de sessoes para os utilizadores
@@ -64,10 +75,14 @@ fi
 # processa argumentos
 args=("$@")
 group=""
+regex=""
 for ((a=0; a<$#; a++)); do
     case ${args[a]} in
         "-g")
             group=${args[a+1]}
+            ;;
+        "-u")
+            regex=${args[a+1]}
             ;;
     esac
 done
