@@ -1,4 +1,6 @@
+<<<<<<< Updated upstream
 #!/bin/bash
+=======
 
 # Função para contar o numero de utilizadores
 function countUsers(){
