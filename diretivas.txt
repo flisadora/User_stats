@@ -12,3 +12,18 @@
 	⁃	-t (por tempo total)
 	⁃	-a (por tempo máximo)
 	⁃	e -i (por tempo mínimo)
+
+
+
+DOCUMENTAÇÃO
+$last
+https://www.cyberciti.biz/faq/linux-unix-last-command-examples/
+
+REGEX
+https://linuxtechlab.com/bash-scripting-learn-use-regex-basics/
+
+SO
+https://stackoverflow.com/questions/3466166/how-to-check-if-running-in-cygwin-mac-or-linuxs
+
+AUTOINDENT MAC
+OPT+SHIFT+F
