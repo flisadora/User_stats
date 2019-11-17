@@ -16,7 +16,7 @@ function countUsers(){
         users=(${users[@]/"root"})
         users=(${users[@]/"_mbsetupuser"})
     fi
-    if [ ! -z $regex]; then
+    if [ ! -z $regex ]; then
         for i in $users; do
             case "$i" in
                 $regex)
@@ -63,6 +63,12 @@ function detailSessions(){
     done
 }
 
+function dateConversion(){
+    dateStr=$(echo $dateStr | sed 's/"//')
+    dateStr=$(date -d "$abc" "+%Y-%m-%d %H:%M")
+    echo $dateStr
+}
+
 # main()
 
 # Identifica qual SO esta a correr entre MAC->"Darwin" e Linux->"Linux"
@@ -76,6 +82,8 @@ fi
 args=("$@")
 group=""
 regex=""
+dSince=""
+dUntil=""
 for ((a=0; a<$#; a++)); do
     case ${args[a]} in
         "-g")
@@ -84,6 +92,20 @@ for ((a=0; a<$#; a++)); do
         "-u")
             regex=${args[a+1]}
             ;;
+        "-s")
+            dateStr="${args[a+1]} ${args[a+2]} ${args[a+3]}"
+            dateConversion
+            dSince=$dateStr
+            ((a=$a+3))
+            echo $dSince
+            ;;
+        "-e")
+            dateStr="${args[a+1]} ${args[a+2]} ${args[a+3]}"
+            dateConversion
+            dUntil=$dateStr
+            echo $dUntil
+            ((a=$a+3))
+            ;;                        
     esac
 done
 countUsers
