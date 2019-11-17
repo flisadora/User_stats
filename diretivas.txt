@@ -1,6 +1,9 @@
 	1)	permite a visualização do número de sessões
 	2)	tempo total de ligação (em minutos)
 	3)	duração máxima e duração mínima das sessões dos utilizadores seleccionados no período seleccionado
+
+------------------------------------------------------------------------------------------------------------------------------------
+
 	•	A selecção dos utilizadores pode ser realizada através do seu grupo (opção -g) 
 	•	ou através de uma expressão regular que é verificada com o nome dos utilizadores (opção -u)
 	•	A selecção do período realiza-se através da especificação da data de início da sessão a partir da qual as sessões devem ser consideradas (opção -s) 
@@ -27,3 +30,7 @@ https://stackoverflow.com/questions/3466166/how-to-check-if-running-in-cygwin-ma
 
 AUTOINDENT MAC
 OPT+SHIFT+F
+
+
+DÚVIDAS
+Na filtragem por datas podemos assumir que o ano é o currente?
