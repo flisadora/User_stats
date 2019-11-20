@@ -64,8 +64,9 @@ function detailSessions(){
 }
 
 function dateConversion(){
+    echo $dateStr
     dateStr=$(echo $dateStr | sed 's/"//')
-    dateStr=$(date -d "$abc" "+%Y-%m-%d %H:%M")
+    dateStr=$(date -d "$dateStr" "+%Y-%m-%d %H:%M")
     echo $dateStr
 }
 
@@ -93,18 +94,16 @@ for ((a=0; a<$#; a++)); do
             regex=${args[a+1]}
             ;;
         "-s")
-            dateStr="${args[a+1]} ${args[a+2]} ${args[a+3]}"
+            dateStr=${args[a+1]}
             dateConversion
             dSince=$dateStr
-            ((a=$a+3))
             echo $dSince
             ;;
         "-e")
-            dateStr="${args[a+1]} ${args[a+2]} ${args[a+3]}"
+            dateStr=${args[a+1]}
             dateConversion
             dUntil=$dateStr
             echo $dUntil
-            ((a=$a+3))
             ;;                        
     esac
 done
