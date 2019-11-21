@@ -7,9 +7,9 @@ function countUsers() {
         IFS=',' read -r -a users <<<"$groupUsers"                   # Faz split da string groupUsers por ',' e cria array na var users
     else                   # Caso não haja filtragem por grupo, fazer lista dos utilizadores presentes no output do comando last
         if [ $soId -eq 0 ]; then
-            users=($(last | awk '{print $1'} | sed 'N;$!P;$!D;$d' | sort -u))
+            users=($(last -f "$file" | awk '{print $1'} | sed 'N;$!P;$!D;$d' | sort -u))
         else
-            users=($(last | awk '{print $1'} | head -n -2 | sort -u))
+            users=($(last -f "$file" | awk '{print $1'} | head -n -2 | sort -u))
         fi
         # Remover os utilizadores da lista
         users=(${users[@]/"shutdown"/})
@@ -33,6 +33,7 @@ function countUsers() {
 
 # Função para contar o numero de sessoes para os utilizadores
 function detailSessions() {
+    nSessions=0
     for i in "${users[@]}"; do # para cada utilizador
         # seleciona coluna do tempo (array)
         if [ $soId -eq 0 ]; then
@@ -51,11 +52,12 @@ function detailSessions() {
             time=(${time[@]/"no"/})
         fi
         if [ ${#time[@]} -gt 0 ]; then # verifica se há registos para esse utilizador
-            echo -n "$i "
+            output+="$i"
             min=1000000000
             max=0
             timeSum=0
             for t in "${time[@]}"; do # percorre tempos de sessao, calcula tempo em minutos e determina tempo minimo e maximo
+                nSessions=$((nSessions + 1))
                 hour=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 1)
                 minute=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
                 timeAux=$((10#$hour * 60 + 10#$minute)) # 10# para quando operados tem zero a esquerda nao dar erro
@@ -67,7 +69,7 @@ function detailSessions() {
                     ((max = $timeAux))
                 fi
             done
-            echo "$timeSum $max $min"
+            output+="\t$nSessions\t$timeSum\t$max\t$min\n"
         fi
     done
 }
@@ -93,11 +95,14 @@ fi
 
 # processa argumentos
 args=("$@")
+output=""
 group=""
 regex=""
 dSince=""
 dUntil=""
+nSessions=0
 file="/var/log/wtmp"
+sortFilter=""
 for ((a = 0; a < $#; a++)); do
     case ${args[a]} in
     "-g")
@@ -119,8 +124,45 @@ for ((a = 0; a < $#; a++)); do
     "-f")
         file=${args[a + 1]}
         ;;
+    "-r")
+        sortFilter+=" -r"
+        ;;
+    "-n")
+        if [ ${#sortFilter} -le 9 ]; then
+            sortFilter+=" -k2 -n"
+        else
+            echo "ERROR! Only one sort type accepted"
+            exit
+        fi
+        ;;
+    "-t")
+        if [ ${#sortFilter} -le 9 ]; then
+            sortFilter+=" -k3 -n"
+        else
+            echo "ERROR! Only one sort type accepted"
+            exit
+        fi
+        ;;
+    "-a")
+        if [ ${#sortFilter} -le 9 ]; then
+            sortFilter+=" -k4 -n"
+        else
+            echo "ERROR! Only one sort type accepted"
+            exit
+        fi
+        ;;
+    "-i")
+        if [ ${#sortFilter} -le 9 ]; then
+            sortFilter+=" -k5 -n"
+        else
+            echo "ERROR! Only one sort type accepted"
+            exit
+        fi
+        ;;
     esac
 done
 
 countUsers
 detailSessions
+
+echo -e $output | sort $sortFilter
