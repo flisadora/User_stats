@@ -35,6 +35,7 @@ function countUsers() {
 function detailSessions() {
     for i in "${users[@]}"; do # para cada utilizador
         sessions=$(echo -n "$(last $filters | awk '{print $1}' | grep $i | wc -l) ") # conta o numero de sessoes
+        echo "session"
         echo $sessions
         if [ $sessions -ne 0 ]; then
             echo -n "$i "
@@ -67,8 +68,13 @@ function detailSessions() {
 }
 
 function dateConversion() {
-    dateStr=$(echo $dateStr | sed 's/"//')
-    dateStr=$(date -d "$dateStr" "+%Y-%m-%d %H:%M")
+    if [ $soId -eq 0 ]; then
+        #IFS=' ' read -ra dateAux <<<"$dateStr"
+        dateStr+=":00"
+        dateStr=$(date -jf "%b %d %T" "$dateStr" "+%Y-%m-%d_%H:%M" | sed 's/_/ /') 
+    else
+        dateStr=$(date -d "$dateStr" "+%Y-%m-%d %H:%M")
+    fi
 }
 
 # main()
@@ -100,7 +106,8 @@ for ((a = 0; a < $#; a++)); do
         dateConversion
         echo $dateStr
         echo $filters
-        filters="$filters -s ${dateStr}"
+        filters="$filters -s $dateStr"
+        echo "filter"
         echo $filters
         ;;
     "-e")
