@@ -34,26 +34,31 @@ function countUsers() {
 # Função para contar o numero de sessoes para os utilizadores
 function detailSessions() {
     for i in "${users[@]}"; do # para cada utilizador
-        sessions=$(echo -n "$(last $filters | awk '{print $1}' | grep $i | wc -l) ") # conta o numero de sessoes
-        echo "session"
-        echo $sessions
-        if [ $sessions -ne 0 ]; then
-            echo -n "$i "
-            # seleciona coluna do tempo (array)
-            if [ $soId -eq 0 ]; then
-                time=($(last | grep $i | awk '{print $9}'))
-                time=(${time[@]/"in"/})
+        # seleciona coluna do tempo (array)
+        if [ $soId -eq 0 ]; then
+            time=($(last | grep $i | awk '{print $9}'))
+            time=(${time[@]/"in"/})
+        else
+            if [ ${#dSince} -ne 0 ] && [ ${#dUntil} -ne 0 ]; then # filtragem pelo periodo temporal
+                time=($(last -s "$dSince" -t "$dUntil" -f "$file" | grep $i | awk '{print $10}'))
+            elif [ ${#dSince} -ne 0 ]; then
+                time=($(last -s "$dSince" -f "$file" | grep $i | awk '{print $10}'))
+            elif [ ${#dUntil} -ne 0 ]; then
+                time=($(last -t "$dUntil" -f "$file" | grep $i | awk '{print $10}'))
             else
-                time=($(last | grep $i | awk '{print $10}'))
-                time=(${time[@]/"no"/})
+                time=($(last -f "$file" | grep $i | awk '{print $10}'))
             fi
+            time=(${time[@]/"no"/})
+        fi
+        if [ ${#time[@]} -gt 0 ]; then # verifica se há registos para esse utilizador
+            echo -n "$i "
             min=1000000000
             max=0
             timeSum=0
             for t in "${time[@]}"; do # percorre tempos de sessao, calcula tempo em minutos e determina tempo minimo e maximo
                 hour=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 1)
-                min=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
-                timeAux=$((10#$hour * 60 + 10#$min)) # 10# para quando operados tem zero a esquerda nao dar erro
+                minute=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
+                timeAux=$((10#$hour * 60 + 10#$minute)) # 10# para quando operados tem zero a esquerda nao dar erro
                 ((timeSum = $timeSum + $timeAux))
                 if [ $timeAux -lt $min ]; then
                     ((min = $timeAux))
@@ -71,7 +76,7 @@ function dateConversion() {
     if [ $soId -eq 0 ]; then
         #IFS=' ' read -ra dateAux <<<"$dateStr"
         dateStr+=":00"
-        dateStr=$(date -jf "%b %d %T" "$dateStr" "+%Y-%m-%d_%H:%M" | sed 's/_/ /') 
+        dateStr=$(date -jf "%b %d %T" "$dateStr" "+%Y-%m-%d_%H:%M" | sed 's/_/ /')
     else
         dateStr=$(date -d "$dateStr" "+%Y-%m-%d %H:%M")
     fi
@@ -92,7 +97,7 @@ group=""
 regex=""
 dSince=""
 dUntil=""
-filters=""
+file="/var/log/wtmp"
 for ((a = 0; a < $#; a++)); do
     case ${args[a]} in
     "-g")
@@ -104,25 +109,18 @@ for ((a = 0; a < $#; a++)); do
     "-s")
         dateStr=${args[a + 1]}
         dateConversion
-        echo $dateStr
-        echo $filters
-        filters="$filters -s $dateStr"
-        echo "filter"
-        echo $filters
+        dSince=$dateStr
         ;;
     "-e")
         dateStr=${args[a + 1]}
         dateConversion
-        echo $dateStr
-        filters="$filters -t ${dateStr}"
-        echo $filters
+        dUntil=$dateStr
+        ;;
+    "-f")
+        file=${args[a + 1]}
         ;;
     esac
 done
-len="${#filters}"
-len=$((len-1))
-last "${filters:1:$len}"
-#last -t "$dateStr"
 
-#countUsers
-#detailSessions
+countUsers
+detailSessions
