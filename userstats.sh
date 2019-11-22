@@ -2,22 +2,22 @@
 
 # Função para contar o numero de utilizadores
 function countUsers() {
-    if [ ! -z $group ]; then # Verifica se string $group não é vazia
+    if [ ! -z $group ]; then # Verifica se string $group nao e vazia
         groupUsers=($(grep "$group:" /etc/group | cut -d ":" -f 4)) # Procura no ficheiro /etc/group os utilizadores que pertecem ao grupo
         IFS=',' read -r -a users <<<"$groupUsers"                   # Faz split da string groupUsers por ',' e cria array na var users
-    else                   # Caso não haja filtragem por grupo, fazer lista dos utilizadores presentes no output do comando last
-        if [ $soId -eq 0 ]; then
+    else                   # Caso nao haja filtragem por grupo, fazer lista dos utilizadores presentes no output do comando last
+        if [ $soId -eq 0 ]; then # Percorrer utilizadores devolvidos pelo comando last e devolver array com estes sem repeticoes
             users=($(last -f "$file" | awk '{print $1'} | sed 'N;$!P;$!D;$d' | sort -u))
         else
             users=($(last -f "$file" | awk '{print $1'} | head -n -2 | sort -u))
         fi
-        # Remover os utilizadores da lista
+        # Remover alguns utilizadores da lista
         users=(${users[@]/"shutdown"/})
         users=(${users[@]/"reboot"/})
         users=(${users[@]/"root"/})
         users=(${users[@]/"_mbsetupuser"/})
     fi
-    # Caso haja filtragem por grupo, remover utilizadores que não pertencem ao grupo da lista
+    # Caso haja filtragem por grupo, remover utilizadores que nao pertencem ao grupo da lista
     if [ ! -z $regex ]; then
         for i in $users; do
             case "$i" in
@@ -31,16 +31,16 @@ function countUsers() {
     fi
 }
 
-# Função para contar o numero de sessoes para os utilizadores
+# Funcao para contar o numero de sessoes para os utilizadores
 function detailSessions() {
     nSessions=0
     for i in "${users[@]}"; do # para cada utilizador
-        # seleciona coluna do tempo (array)
+        # Selecionar coluna do tempo (array)
         if [ $soId -eq 0 ]; then
             time=($(last | grep $i | awk '{print $9}'))
             time=(${time[@]/"in"/})
         else
-            if [ ${#dSince} -ne 0 ] && [ ${#dUntil} -ne 0 ]; then # filtragem pelo periodo temporal
+            if [ ${#dSince} -ne 0 ] && [ ${#dUntil} -ne 0 ]; then # Filtrar pelo periodo temporal
                 time=($(last -s "$dSince" -t "$dUntil" -f "$file" | grep $i | awk '{print $10}'))
             elif [ ${#dSince} -ne 0 ]; then
                 time=($(last -s "$dSince" -f "$file" | grep $i | awk '{print $10}'))
@@ -49,14 +49,14 @@ function detailSessions() {
             else
                 time=($(last -f "$file" | grep $i | awk '{print $10}'))
             fi
-            time=(${time[@]/"no"/})
+            time=(${time[@]/"no"/}) # Ignorar sessao atual (sem duracao atribuida)
         fi
-        if [ ${#time[@]} -gt 0 ]; then # verifica se há registos para esse utilizador
+        if [ ${#time[@]} -gt 0 ]; then # Verificar se há registos para esse utilizador
             output+="$i"
             min=1000000000
             max=0
             timeSum=0
-            for t in "${time[@]}"; do # percorre tempos de sessao, calcula tempo em minutos e determina tempo minimo e maximo
+            for t in "${time[@]}"; do # Percorrer tempos de sessao, calcular tempo em minutos e determinar tempos minimo e maximo
                 nSessions=$((nSessions + 1))
                 hour=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 1)
                 minute=$(echo $t | sed 's/(//' | sed 's/)//' | cut -d ":" -f 2)
@@ -69,14 +69,14 @@ function detailSessions() {
                     ((max = $timeAux))
                 fi
             done
-            output+="\t$nSessions\t$timeSum\t$max\t$min\n"
+            output+="\t$nSessions\t$timeSum\t$max\t$min\n" 
         fi
     done
 }
 
 function dateConversion() {
+    # Converter de data no formato "MES(3 primeiros caracteres) DD HH:MM" em "AAAA-MM-DD HH:MM"
     if [ $soId -eq 0 ]; then
-        #IFS=' ' read -ra dateAux <<<"$dateStr"
         dateStr+=":00"
         dateStr=$(date -jf "%b %d %T" "$dateStr" "+%Y-%m-%d_%H:%M" | sed 's/_/ /')
     else
@@ -86,14 +86,14 @@ function dateConversion() {
 
 # main()
 
-# Identifica qual SO esta a correr entre MAC->"Darwin" e Linux->"Linux"
+# Identificar qual SO esta a correr entre MAC->"Darwin" e Linux->"Linux"
 if [ "$(uname)" == "Darwin" ]; then
-    soId=0 # under Mac OS X platform
+    soId=0 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    soId=1 # under GNU/Linux platform
+    soId=1
 fi
 
-# processa argumentos
+# Inicializar as variaveis
 args=("$@")
 output=""
 group=""
@@ -103,6 +103,8 @@ dUntil=""
 nSessions=0
 file="/var/log/wtmp"
 sortFilter=""
+
+# Processar os argumentos
 for ((a = 0; a < $#; a++)); do
     case ${args[a]} in
     "-g")
@@ -162,7 +164,9 @@ for ((a = 0; a < $#; a++)); do
     esac
 done
 
+# Invocar as funcoes
 countUsers
 detailSessions
 
+# Output
 echo -e $output | sort $sortFilter
