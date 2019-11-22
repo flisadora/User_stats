@@ -169,4 +169,4 @@ countUsers
 detailSessions
 
 # Output
-echo -e $output | sort $sortFilter
+echo -e "${output::-2}" | sort $sortFilter
