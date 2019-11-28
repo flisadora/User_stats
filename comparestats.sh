@@ -3,13 +3,27 @@
 # main()
 
 # le primeiro ficheiro linha a linha
-file1=$1
-file2=$2
+args=("$@")
+if [ ${#args[@]} -lt 2 ]; then
+  echo "ERROR! Usage: ./comparestats.sh <options> <file1> <file2>"
+  echo "Options are not requised and should be writen before the files names!"
+  exit
+fi
+file1=${args[$# - 2]}
+file2=${args[$# - 1]}
+# Validacao dos argumentos
+if [ ! -f $file1 ]; then
+  echo "ERROR! The file $file1 does not exist!"
+  exit
+fi
+if [ ! -f $file2 ]; then
+  echo "ERROR! The file $file2 does not exist!"
+  exit
+fi
 userF1=()
 userF2=()
 usedUsers=()
 output=""
-args=("$@")
 while IFS= read -r line; do
   if [ ! -z "$line" ]; then
     userF1=($(echo $line))
@@ -38,44 +52,65 @@ done <"$file2"
 
 # Processar os argumentos
 for ((a = 0; a < $#; a++)); do
-    case ${args[a]} in
-    "-r")
-        sortFilter+=" -r"
-        ;;
-    "-n")
-        if [ ${#sortFilter} -le 9 ]; then
-            sortFilter+=" -k2 -n"
-        else
-            echo "ERROR! Only one sort type accepted"
-            exit
-        fi
-        ;;
-    "-t")
-        if [ ${#sortFilter} -le 9 ]; then
-            sortFilter+=" -k3 -n"
-        else
-            echo "ERROR! Only one sort type accepted"
-            exit
-        fi
-        ;;
-    "-a")
-        if [ ${#sortFilter} -le 9 ]; then
-            sortFilter+=" -k4 -n"
-        else
-            echo "ERROR! Only one sort type accepted"
-            exit
-        fi
-        ;;
-    "-i")
-        if [ ${#sortFilter} -le 9 ]; then
-            sortFilter+=" -k5 -n"
-        else
-            echo "ERROR! Only one sort type accepted"
-            exit
-        fi
-        ;;
-    esac
+  case ${args[a]} in
+  "-r")
+    sortFilter+=" -r"
+    ;;
+  "-n")
+    if [ ${#sortFilter} -le 9 ]; then
+      sortFilter+=" -k2 -n"
+    else
+      echo "ERROR! Only one sort type accepted"
+      exit
+    fi
+    ;;
+  "-t")
+    if [ ${#sortFilter} -le 9 ]; then
+      sortFilter+=" -k3 -n"
+    else
+      echo "ERROR! Only one sort type accepted"
+      exit
+    fi
+    ;;
+  "-a")
+    if [ ${#sortFilter} -le 9 ]; then
+      sortFilter+=" -k4 -n"
+    else
+      echo "ERROR! Only one sort type accepted"
+      exit
+    fi
+    ;;
+  "-i")
+    if [ ${#sortFilter} -le 9 ]; then
+      sortFilter+=" -k5 -n"
+    else
+      echo "ERROR! Only one sort type accepted"
+      exit
+    fi
+    ;;
+  *) # Validacao das opcoes (se chegou aqui e comeca por "-" e porque e invalida)
+    if [[ ${args[a]} == -* ]]; then
+      echo "ERROR! ${args[a]} is not an option!"
+      echo "The valid options are..."
+      echo -e "\t-r"
+      echo -e "\t\tSort the output in reverse order"
+      echo -e "\t-n"
+      echo -e "\t\tSort the output by number of sessions"
+      echo -e "\t-t"
+      echo -e "\t\tSort the output by total time"
+      echo -e "\t-a"
+      echo -e "\t\tSort the output by maximum time"
+      echo -e "\t-i"
+      echo -e "\t\tSort the output by minimum time"
+      exit
+    fi
+    ;;
+  esac
 done
 
 # Output
-echo -e "${output::-2}" | sort $sortFilter
+if [ ${#output} -gt 0 ]; then
+  echo -e "${output::-2}" | sort $sortFilter
+else
+  echo "There is no data to show matching the given options."
+fi
