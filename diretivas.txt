@@ -32,5 +32,13 @@ AUTOINDENT MAC
 OPT+SHIFT+F
 
 
-DÚVIDAS
-Na filtragem por datas podemos assumir que o ano é o currente?
+DIVISÃO
+Isadora
+	dateConversion()
+	detailSessions()
+	compareStats.sh
+	Apêndice dos comandos
+
+Gonçalo
+	Apêndice dos testes
+	Conclusão
