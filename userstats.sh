@@ -7,9 +7,9 @@ function countUsers() {
         IFS=',' read -r -a users <<<"$groupUsers"                   # Faz split da string groupUsers por ',' e cria array na var users
     else                   # Caso nao haja filtragem por grupo, fazer lista dos utilizadores presentes no output do comando last
         if [ $soId -eq 0 ]; then # Percorrer utilizadores devolvidos pelo comando last e devolver array com estes sem repeticoes
-            users=($(last -f "$file" | awk '{print $1'} | sed 'N;$!P;$!D;$d' | sort -u))
+            users=($(last -f "$file" | awk '{print $1}' | sed 'N;$!P;$!D;$d' | sort -u))
         else
-            users=($(last -f "$file" | awk '{print $1'} | head -n -2 | sort -u))
+            users=($(last -f "$file" | awk '{print $1}' | head -n -2 | sort -u))
         fi
         # Remover alguns utilizadores da lista
         users=(${users[@]/"shutdown"/})
